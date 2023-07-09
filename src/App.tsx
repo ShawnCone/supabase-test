@@ -12,9 +12,10 @@ const phoneNumber = ""; // Change to your phone number, or other authentication 
 supabase.auth.onAuthStateChange(async (event, session) => {
   console.log({ event, session });
   if (event === "TOKEN_REFRESHED") {
+    // To easily test this, make the JWT expiry limit to 1 second in the Supabase dashboard
     console.log("Token is refreshed! trying to get users data...");
     const { data, error } = await supabase.from("users").select("*"); // Change users to your table
-    console.log({ data, error });
+    console.log({ data, error }); // Never reached here
   }
 });
 
