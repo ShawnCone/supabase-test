@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import "./App.css";
 import { createClient } from "@supabase/supabase-js";
 
@@ -7,69 +7,42 @@ const supabase = createClient(
   import.meta.env.VITE_SUPABASE_PROJECT_ANON_KEY
 );
 
-const phoneNumber = ""; // Change to your phone number, or other authentication method
-
-supabase.auth.onAuthStateChange(async (event, session) => {
-  console.log({ event, session });
-  if (event === "TOKEN_REFRESHED") {
-    // To easily test this, make the JWT expiry limit to 1 second in the Supabase dashboard
-    console.log("Token is refreshed! trying to get users data...");
-    const { data, error } = await supabase.from("users").select("*"); // Change users to your table
-    console.log({ data, error }); // Never reached here
-  }
-});
-
 function App() {
-  const [otpValue, setOtpValue] = useState("");
-
-  async function handleSendOtp() {
-    const { error } = await supabase.auth.signInWithOtp({
-      phone: phoneNumber,
-      options: {
-        //   channel: "whatsapp",
-        channel: "sms",
-      },
+  async function handleLogin() {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: "test@test.com",
+      password: "123123123",
     });
     if (error) {
       console.error(error);
     }
   }
 
-  async function handleVerifyOtp() {
-    const { error } = await supabase.auth.verifyOtp({
-      phone: phoneNumber,
-      token: otpValue,
-      type: "sms",
+  useEffect(() => {
+    const ret = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log({ event, session });
+
+      if (session === null) {
+        return;
+      }
+
+      const { data, error } = await supabase.from("test").select();
+      console.log({ data, error });
     });
 
-    if (error !== null) {
-      console.error(error);
-    }
-  }
+    return () => ret.data.subscription.unsubscribe();
+  }, []);
 
   return (
     <>
       <h2>Test login supabase</h2>
       <button
         onClick={() => {
-          handleSendOtp();
+          handleLogin();
         }}
       >
-        Send OTP
+        Login
       </button>
-      <div>
-        <input
-          value={otpValue}
-          onChange={(e) => setOtpValue(e.currentTarget.value)}
-        />
-        <button
-          onClick={() => {
-            handleVerifyOtp();
-          }}
-        >
-          Verify
-        </button>
-      </div>
       <button
         onClick={() => {
           supabase.auth.signOut();
