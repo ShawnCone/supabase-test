@@ -10,7 +10,7 @@ const supabase = createClient(
 function App() {
   async function handleLogin() {
     const { error } = await supabase.auth.signInWithPassword({
-      email: "test@test.com",
+      email: "test@test.com", // User is created already
       password: "123123123",
     });
     if (error) {
@@ -26,8 +26,8 @@ function App() {
         return;
       }
 
-      const { data, error } = await supabase.from("test").select();
-      console.log({ data, error });
+      const { data, error } = await supabase.from("test").select(); // Test is a table with no RLS policy
+      console.log({ data, error }); // Never reach here when event is TOKEN_REFRESHED
     });
 
     return () => ret.data.subscription.unsubscribe();
